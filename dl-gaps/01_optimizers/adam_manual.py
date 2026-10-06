@@ -13,30 +13,22 @@ def adam_step(p, g, m, v, t, lr=1e-3, beta1=0.9, beta2=0.999, eps=1e-8,
 
     Возвращает (p_new, m_new, v_new). Входные тензоры на месте не меняем.
     """
-    # 1. L2-регуляризация: в loss добавлено слагаемое (wd/2) * ||p||^2.
-    #    Чему равен его градиент? Прибавь его к g.
     if mode == "adam" and weight_decay != 0:
-        g = ...  # TODO
+        g = g + weight_decay*p
 
-    # 2. Decoupled weight decay: сжимаем веса напрямую, градиент НЕ трогаем.
-    #    Точную формулу сверь с псевдокодом в документации torch.optim.AdamW.
     if mode == "adamw" and weight_decay != 0:
-        p = ...  # TODO
+        p = p - lr*weight_decay*p
 
-    # 3. EMA первого момента (по градиентам)
-    m = ...  # TODO
+    m = beta1*m + (1-beta1)*g
 
-    # 4. EMA второго момента (по квадратам градиентов)
-    v = ...  # TODO
+    v = beta2*v + (1-beta2)*(g**2)
 
-    # 5. Bias correction: поправка на то, что m и v стартовали с нуля
     if bias_correction:
-        m_hat = ...  # TODO
-        v_hat = ...  # TODO
+        m_hat = m / (1-beta1**t)
+        v_hat = v / (1-beta2**t)
     else:
         m_hat, v_hat = m, v
 
-    # 6. Обновление весов
-    p = ...  # TODO
+    p = p - lr*((m_hat / (torch.sqrt(v_hat)+eps)))
 
     return p, m, v
